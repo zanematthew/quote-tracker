@@ -70,4 +70,6 @@ Browse by
 </div>
 </div>
 </div>
+<?php do_action( 'inplace_edit', $post->ID ); ?>
+
 <?php get_footer(); ?>
