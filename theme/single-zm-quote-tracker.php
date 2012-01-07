@@ -66,6 +66,7 @@ $obj_tax = get_taxonomies( array( 'object_type' => array($post_type) ), $output=
     <?php endforeach; ?>
 </div> 
 <?php if ( is_user_logged_in() ) : ?>            
+    <?php edit_post_link( __('WordPress Admin Edit') ); ?> 
     <a href="#" id="default_utility_edit_handle">Edit</a>
     <div class="zm-default-form-container default-update-container" id="default_utility_update_container" style="display: none;">
         <form action="javascript://" method="POST" id="default_utility_udpate_form">
