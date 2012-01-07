@@ -1,6 +1,20 @@
 .inplace-edit-container { z-index: 9999; }
-.inplace-edit-container textarea { min-height: 200px; float: left; margin: 0; }
-.inplace-edit-container input[type="text"] { margin: 0; z-index: 9999; height: auto; }
+
+.inplace-edit-container textarea { 	
+	float: left; 
+	line-height: 1.4em;
+	margin: 0; 
+	min-height: 200px; 
+	}
+
+.inplace-edit-container input[type="text"] { 
+	height: auto; 
+	margin: 0;
+	min-width: 200px;
+	padding: 10px;
+	z-index: 9999; 
+	}
+
 .inplace-edit-container .button-pane { float: left; }
 .inplace-edit-container .button-pane .entry-utility-container ul { list-style-type: none; }
 .inplace-edit-container .button-pane .entry-utility-container ul li { display: inline; }
