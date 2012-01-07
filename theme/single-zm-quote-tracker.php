@@ -50,45 +50,44 @@ $obj_tax = get_taxonomies( array( 'object_type' => array($post_type) ), $output=
                 <?php endif; ?>
                 
                 <span class="m-dash">&mdash;</span>
-
-                <?php if ( is_user_logged_in() ) : ?>            
-                    <a href="#" id="default_utility_edit_handle">Edit</a>
-                <?php endif; ?>
-
-                <div class="utility-zm-quote-tracker" id="utility-container">        
-                    <strong>Title </strong><h1 class="title post-title"><?php the_title(); ?></h1>
-                    <?php foreach ( $cpt_obj[$post_type]->taxonomies as $tax ) : ?>
-                        <?php $term = zm_base_get_the_term_list( array( 'post_id' => $id , 'post_type' => $post_type, 'taxonomy' => $tax, 'link' => 'anchor') ); ?>
-                        <?php if ( ! is_null( $term ) ) : ?>
-                        <div class="<?php print $tax; ?>-container">
-                            <strong><?php print $obj_tax[$tax]->labels->singular_name; ?></strong>
-                            <?php print $term; ?>            
-                        </div>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </div> 
-                <?php if ( is_user_logged_in() ) : ?>            
-                    <div class="zm-default-form-container default-update-container" id="default_utility_update_container" style="display: none;">
-                        <a name="update"></a>
-                        <form action="javascript://" method="POST" id="default_utility_udpate_form">
-                            <input type="hidden" name="PostID" id="post_id" value="<?php echo $post->ID; ?>" />
-                            <?php zm_base_build_options( 'book' ); ?>
-                            <?php zm_base_build_options( 'movie' ); ?>
-                            <?php zm_base_build_options( 'song' ); ?>
-                            <?php zm_base_build_options( 'people' ); ?>            
-                            <?php zm_base_build_options( array( 'taxonomy' => 'zm-quote-tag', 'multiple' => true, 'extra_class' => 'my-tags', 'label' => 'Quote Tags' ) ); ?>
-                            <div class="button-container">
-                                <div id="publishing-action">
-                                    <div class="mini-button-container">
-                                        <input class="update" type="submit" value="Update" accesskey="p" name="save" />                    
-                                        <a href="javascript://" id="default_utility_update_exit" class="exit">Cancel</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+                
+<!-- Start 'Utility' -->
+<div class="" id="inplace_edit_utility_container">
+<div class="utility-zm-quote-tracker" id="utility-container">    
+    <strong>Title </strong><h1 class="title post-title"><?php the_title(); ?></h1>
+    <?php foreach ( $cpt_obj[$post_type]->taxonomies as $tax ) : ?>
+        <?php $term = zm_base_get_the_term_list( array( 'post_id' => $id , 'post_type' => $post_type, 'taxonomy' => $tax, 'link' => 'anchor') ); ?>
+        <?php if ( ! is_null( $term ) ) : ?>
+        <div class="<?php print $tax; ?>-container">
+            <strong><?php print $obj_tax[$tax]->labels->singular_name; ?></strong>
+            <?php print $term; ?>            
+        </div>
+        <?php endif; ?>
+    <?php endforeach; ?>
+</div> 
+<?php if ( is_user_logged_in() ) : ?>            
+    <a href="#" id="default_utility_edit_handle">Edit</a>
+    <div class="zm-default-form-container default-update-container" id="default_utility_update_container" style="display: none;">
+        <form action="javascript://" method="POST" id="default_utility_udpate_form">
+            <input type="hidden" name="PostID" id="post_id" value="<?php echo $post->ID; ?>" />
+            <?php zm_base_build_options( 'book' ); ?>
+            <?php zm_base_build_options( 'movie' ); ?>
+            <?php zm_base_build_options( 'song' ); ?>
+            <?php zm_base_build_options( 'people' ); ?>            
+            <?php zm_base_build_options( array( 'taxonomy' => 'zm-quote-tag', 'multiple' => true, 'extra_class' => 'my-tags', 'label' => 'Quote Tags' ) ); ?>
+            <div class="button-container">
+                <div id="publishing-action">
+                    <div class="mini-button-container">
+                        <input class="update" type="submit" value="Update" accesskey="p" name="save" />                    
+                        <a href="javascript://" id="default_utility_update_exit" class="exit">Cancel</a>
                     </div>
-                <?php endif; ?>                
-                <!-- End 'utility' -->
+                </div>
+            </div>
+        </form>
+    </div>
+<?php endif; ?>
+</div>              
+<!-- End 'Utility' -->
 
 <!-- Start 'Comment' -->
 <div id="zm_ajax_comment_handle" data-post_id="<?php echo $id; ?>" data-template="<?php print plugin_dir_path(__FILE__);?>comment.php">

@@ -42,6 +42,7 @@ jQuery(document).ready(function( $ ){
     if ( jQuery().chosen )
         $("select").chosen();         
 
+// inplace_edit_container
     $('#default_utility_udpate_form').live('submit', function(){        
         $.ajax({
             data: "action=zm_inplace_edit_update_utility&" + $( this ).serialize(),
@@ -56,4 +57,11 @@ jQuery(document).ready(function( $ ){
         $('#utility-container').toggle();
         $('#default_utility_update_container').toggle();
     });
+
+    $('#inplace_edit_utility_container').on('click', '.exit', function( event ){
+        event.preventDefault();        
+        $('#default_utility_update_container').toggle();
+        $('#utility-container').toggle();
+    });
+//
 });
