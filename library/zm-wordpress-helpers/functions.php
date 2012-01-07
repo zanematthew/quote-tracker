@@ -330,7 +330,7 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
     if ( empty( $extra_css ) ) 
         $extra_css = null;
 
-    if ( $multiple ) {
+    if ( ! empty( $multiple ) ) {
         $multiple = 'multiple="multiple"';
         $multiple_extra = '[]';
     } else {

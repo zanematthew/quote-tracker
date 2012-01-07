@@ -1,4 +1,11 @@
 <?php
+add_action( 'wp_ajax_add_quote', 'add_quote' );
+add_action( 'create_quote', 'create_zm_quote_tracker', 10 );
+add_action( 'wp_ajax_postTypeSubmit', 'postTypeSubmit' );
+add_action('template_redirect', 'quote_tracker_redirect' );        
+do_action( 'inplace-edit' );
+do_action( 'hash-filter' );
+do_action( 'zm-ajax' );
 
 /**
  * Get somethings and do a little bit of thinking before calling the redirect methods.
@@ -20,36 +27,7 @@ function quote_tracker_redirect( $params=array() ) {
     if ( ! is_admin() ) {
         wp_enqueue_style( 'quote-tracker-base', plugin_dir_url( __FILE__ ) . 'theme/style.css', '', 'all' ); 
         wp_enqueue_script( 'quote-script', plugin_dir_url( __FILE__ ) . 'theme/script.js', array('jquery' ), '0.0.1' );        
-    }
-        /*
-
-    if ( ! is_admin() ) {
-        // Regsiter our jQuery plugins and extra JavaScript
-        wp_register_script( 'zm-cpt-hash',         plugin_dir_url( __FILE__ ) . 'js/hash.js',                                   array('jquery', 'jquery-ui-core', 'jquery-ui-dialog' ), '0.0.1' );
-        wp_register_script( 'zm-cpt-cud',          plugin_dir_url( __FILE__ ) . 'js/cud.js',                                    array('jquery'), '0.0.1' );
-        wp_register_script( 'jquery-ui-effects',   plugin_dir_url( __FILE__ ) . 'js/jquery-ui/jquery-ui-1.8.13.effects.min.js', array('jquery'), '1.8.13' );            
-        wp_register_script( 'inplace-edit-script', plugin_dir_url( __FILE__ ) . 'js/inplace-edit/inplace-edit.js',              array('jquery'), '0.1' );                        
-        wp_register_style(  'inplace-edit-style',  plugin_dir_url( __FILE__ ) . 'js/inplace-edit/inplace-edit.css',             '', 'all' );
-
-        // Regsiter our base JS, note the dependencies
-        wp_register_script( 'zm-cpt-base', plugin_dir_url( __FILE__ ) . 'js/base.js', array( 'jquery', 'inplace-edit-script', 'zm-cpt-hash', 'zm-cpt-cud', 'jquery-ui-effects' ), '0.0.1' );
-
-        // Regsiter our CSS files
-        wp_register_style( 'zm-cpt-base',        plugin_dir_url( __FILE__ ) . 'css/style.css',    '',                   'all' );
-        wp_register_style( 'zm-cpt-single',      plugin_dir_url( __FILE__ ) . 'css/single.css',   array('zm-cpt-base'), 'all' );
-        wp_register_style( 'zm-cpt-taxonomy',    plugin_dir_url( __FILE__ ) . 'css/taxonomy.css', array('zm-cpt-base'), 'all' );
-        wp_register_style( 'zm-cpt-archive',     plugin_dir_url( __FILE__ ) . 'css/archive.css',  array('zm-cpt-base'), 'all' );            
-        
-        // Load twitter bootstrap
-        wp_enqueue_style( 'twitter-bootstrap',  plugin_dir_url( __FILE__ ) . 'twitter-bootstrap/bootstrap.css', '', 'all' );            
-
-        // Register some twitter bootstrap
-        wp_register_script( 'bootstrap-twipsy',  plugin_dir_url( __FILE__ ) . 'twitter-bootstrap/js/bootstrap-twipsy.js',  array('jquery'), '1.4.0' );
-        wp_register_script( 'bootstrap-popover', plugin_dir_url( __FILE__ ) . 'twitter-bootstrap/js/bootstrap-popover.js', '', '1.4.0' );
-        wp_register_script( 'bootstrap-modal',   plugin_dir_url( __FILE__ ) . 'twitter-bootstrap/js/bootstrap-modal.js',   array('jquery'), '1.4.0' );
-        wp_register_script( 'bootstrap-alerts',  plugin_dir_url( __FILE__ ) . 'twitter-bootstrap/js/bootstrap-alerts.js',  array('jquery'), '1.4.0' );
-    }
-*/    
+    }    
 
     if ( is_single() ) {
         
@@ -101,7 +79,6 @@ function quote_tracker_redirect( $params=array() ) {
         die('for now');
     }
 }
-add_action('template_redirect', 'quote_tracker_redirect' );        
 
 /**
  * Basic post submission for use with an ajax request
@@ -180,31 +157,122 @@ function postTypeSubmit() {
     }
     die();
 } // End 'postTypeSubmit'
-add_action( 'wp_ajax_postTypeSubmit', 'postTypeSubmit' );
 
+function add_quote(){ 
+    // @todo needs to be generic for cpt
+    check_ajax_referer( 'zm-quote-tracker-forms', 'security' );
 
-/**
- * Define callback function
- * Inside this function you can do whatever you can imagine
- * with the variables that are loaded in the do_action() call above.
- */
-function who_is_hook( $a, $b ) {
-    echo '<code>';
-    print_r( $a ); // `print_r` the array data inside the 1st argument
-    echo '</code>';
-    echo '<br />'.$b; // echo linebreak and value of 2nd argument
-} 
+    if ( !is_user_logged_in() )
+        return false;
 
-// add_action( $tag, $function_to_add, $priority, $accepted_args );
-add_action( 'i_am_hook', 'who_is_hook', 10, 2 );  
+    $error = null;        
+/*
+    if ( empty( $_POST['post_title'] ) ) {
+        $error .= '<div class="message">Please enter a <em>title</em>.</div>';
+    }
 
-// Define the arguments for the action hook
-$a = array(
-     'eye patch' => 'yes'
-    ,'parrot' => true
-    ,'wooden leg' => (int) 1
-);
-$b = 'And hook said: "I ate ice cream with peter pan."'; 
+    if ( ! is_null( $error ) ) {
+        print '<div class="error-container">' . $error . '</div>';
+        exit;
+    }
+*/
 
-// Defines the action hook named 'i_am_hook'
-//do_action( 'i_am_hook', $a, $b );
+    foreach( $_POST as $k => $v )
+        $_POST[$k] = esc_attr( $v );
+
+    $author_ID = get_current_user_id();
+
+    $post = array(
+        'post_title' => $_POST['post_title'],
+        'post_content' => $_POST['content'],
+        'post_excerpt' => $_POST['excerpt'],
+        'post_author' => $author_ID,            
+        'post_type' => 'zm-quote-tracker',
+        'post_date' => date( 'Y-m-d H:i:s' ),
+        'post_status' => 'publish'
+    );
+
+    // should be white listed        
+    // We'll trust anything left over is our tax => term
+    unset( $_POST['action'] );
+    unset( $_POST['security'] );
+    unset( $_POST['post_type'] );
+	unset( $_POST['post_title'] );
+    unset( $_POST['content'] );
+    unset( $_POST['excerpt'] );  
+        
+    $_POST['zm-quote-tag'] = explode( ", ", $_POST['zm-quote-tag'] );
+    
+    $post_id = wp_insert_post( $post, true );        
+
+    if ( is_wp_error( $post_id ) ) {         
+        print_r( $post_id->get_error_message() );              
+        print_r( $post_id->get_error_messages() );              
+        print_r( $post_id->get_error_data() );
+        return;
+    } else {            
+        print '<div class="success-container"><div class="message">Your content was successfully <strong>Saved</strong></div></div>';
+    }
+
+    // Remember we "trust" whats left over from $_POST to be taxes
+    // $v = term, $k = taxonomy
+    foreach ( $_POST as $k => $v ) {            
+
+        // If its an array we have tags
+        if ( is_array( $v ) ) {
+            
+            foreach( $v as $tags => $tag ) {                                        
+                $tag_id = term_exists( $tag, $k );
+                
+                // no tag id, add it                    
+                if ( is_null( $tag_id ) ) {                        
+                    $temp_tag = wp_insert_term( $tag, $k );            
+                    $tag_id = $temp_tag['term_id'];                                 
+                    wp_set_post_terms( $post_id, $tag_id, $k, true );
+                } else {
+                    $tag_id = $tag_id['term_id'];
+                }
+                wp_set_post_terms( $post_id, $tag_id, $k, true );                    
+            }
+        } 
+        
+        else {
+            $term_id = term_exists( $v, $k );
+            // we have a term update our post            
+            if ( $term_id ) {
+                wp_set_post_terms( $post_id, $term_id, $k );
+            } else {
+                // else insert the new term then update our post
+                if ( !empty( $v ) ) {
+                    $term = wp_insert_term( $v, $k );
+                    $success = wp_set_post_terms( $post_id, $term['term_id'], $k );            
+                }
+            }                
+        }            
+    }                    
+	die();
+}
+
+function create_zm_quote_tracker( ) {
+
+    $js_depends = array(
+        'jquery', 
+        'jquery-ui-core', 
+        'jquery-ui-dialog', 
+        'jquery-effects-core',
+        'chosen'
+        );
+
+	wp_enqueue_style( 'chosen-css', plugin_dir_url( __FILE__ ) . 'library/chosen/chosen.css',             '', 'all' );
+    wp_enqueue_style( 'wp-jquery-ui-dialog' );
+    wp_enqueue_script( 'chosen', plugin_dir_url( __FILE__ ) . 'library/chosen/chosen.jquery.js', array('jquery') );
+    wp_enqueue_script( 'quote-tracker-script', plugin_dir_url( __FILE__ ) . 'theme/create.js', $js_depends );    
+       
+    add_action( 'wp_footer', function(){
+        print '<div id="create_zm_quote_tracker_dialog" class="dialog-container" title="Add a new <em>Quote</em>">
+        <div id="create_zm_quote_tracker_target" style="display: none;"></div>
+        </div>';    
+    });
+    
+    print '<a href="javascript:void(0);" id="create_zm_quote_tracker_handle" data-template="' . plugin_dir_path( __FILE__ ) . 'theme/create.php" data-post_type="'. $cpt .'">Add a Quote!</a>';
+}
