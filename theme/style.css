@@ -218,7 +218,7 @@ a:hover {
 	}
 
 .main-zm-quote-tracker .filter-control-item {
-	background: url(close-circle.png) no-repeat right 3px;
+	background: url(images/close-circle.png) no-repeat right 3px;
 	color: #404040;
 	cursor: pointer;
 	display: inline-block;
