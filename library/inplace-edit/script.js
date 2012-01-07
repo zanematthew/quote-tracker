@@ -58,7 +58,7 @@ jQuery(document).ready(function( $ ){
         $('#default_utility_update_container').toggle();
     });
 
-    $('#inplace_edit_utility_container').on('click', '.exit', function( event ){
+    $('#inplace_edit_utility_container form').on('click', '.exit', function( event ){
         event.preventDefault();        
         $('#default_utility_update_container').toggle();
         $('#utility-container').toggle();
