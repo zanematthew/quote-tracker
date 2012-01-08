@@ -356,7 +356,10 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
 
     if ( $post ) {
         $current_terms = get_the_terms( $post->ID, $taxonomy );
+    } else {
+        $current_terms = null;        
     }
+    $temp = null;
     ?>
     <?php if ( $terms ) : ?>
     <fieldset class="zm-base-<?php echo $taxonomy; ?>-container <?php echo $taxonomy; ?>-container">
@@ -365,10 +368,11 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
         <?php // First choice ?>
         <option value="">-- Choose a <?php echo $taxonomy; ?> --</option>              
         <?php foreach( $terms as $term ) : ?>
+            <?php if ( ! empty( $current_terms )) : ?>
             <?php for ( $i=0, $count=count($current_terms); $i <= $count; $i++ ) : ?>
-                <?php // yes fuckig cryptic, i hate for's in foreach's; ?>
-                <?php $current_terms[$term->term_id]->name ? $temp = $current_terms[$term->term_id]->name : $temp = null; ?>
+                <?php $current_terms[$term->term_id]->name ? $temp = $current_terms[$term->term_id]->name : $temp = null; ?>            
             <?php endfor; ?>
+                <?php endif; ?> 
             <?php $term->name == $temp ? $selected = 'selected="selected"' : $selected = null; ?>
             <option 
             value="<?php echo $prepend; ?><?php echo $term->$value; ?>" 

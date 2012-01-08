@@ -63,16 +63,6 @@ function add_quote(){
         return false;
 
     $error = null;        
-/*
-    if ( empty( $_POST['post_title'] ) ) {
-        $error .= '<div class="message">Please enter a <em>title</em>.</div>';
-    }
-
-    if ( ! is_null( $error ) ) {
-        print '<div class="error-container">' . $error . '</div>';
-        exit;
-    }
-*/
 
     foreach( $_POST as $k => $v )
         $_POST[$k] = esc_attr( $v );
