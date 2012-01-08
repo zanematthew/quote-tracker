@@ -917,11 +917,6 @@ if ( ! function_exists( '_zm_template_redirect' ) ) :
 function _zm_template_redirect( $params=array()){
     
     extract( $params );
-    
-    global $post;
-        
-    if ( $post->post_type != $params['post_type'] )
-        return;
 
     if ( is_single() ) {        
         if ( file_exists( $params['single'] ) ) {                        

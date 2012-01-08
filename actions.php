@@ -20,6 +20,11 @@ if ( ! is_admin() ) {
  */
 function quote_tracker_redirect( $params=array() ) {    
 
+   $post_type = get_query_var('post_type');
+
+    if ( $post_type != 'zm-quote-tracker' )
+        return;
+
     if ( ! is_admin() ) {
         do_action( 'inplace-edit' );
         do_action( 'hash-filter' );
