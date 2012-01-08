@@ -17,8 +17,10 @@
  */
  
  // @todo namespace
+ if ( ! interface_exists( 'zMICustomPostType' ) ) :
 interface zMICustomPostType {
     public function registerPostType( $param=array() );
     public function registerTaxonomy( $param=array() );        
     public function registerActivation();        
 } // End 'ICustomPostType'
+endif;

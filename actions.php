@@ -1,11 +1,10 @@
 <?php
-add_action( 'wp_ajax_add_quote', 'add_quote' );
-add_action( 'create_quote', 'create_zm_quote_tracker', 10 );
-add_action( 'wp_ajax_postTypeSubmit', 'postTypeSubmit' );
 add_action('template_redirect', 'quote_tracker_redirect' );        
-do_action( 'inplace-edit' );
-do_action( 'hash-filter' );
-do_action( 'zm-ajax' );
+add_action( 'wp_ajax_add_quote', 'add_quote' );
+
+if ( ! is_admin() ) {
+    add_action( 'create_quote', 'create_zm_quote_tracker', 10 );    
+}
 
 /**
  * Get somethings and do a little bit of thinking before calling the redirect methods.
@@ -20,64 +19,24 @@ do_action( 'zm-ajax' );
  * @uses $this->archiveRedirect()
  */
 function quote_tracker_redirect( $params=array() ) {    
-    global $post;    
-    $current_post_type = $post->post_type;
-    $custom_template  = plugin_dir_path( __FILE__ ) . 'theme/single-' . $current_post_type . '.php';
 
     if ( ! is_admin() ) {
+        do_action( 'inplace-edit' );
+        do_action( 'hash-filter' );
+        do_action( 'zm-ajax' );
+            
         wp_enqueue_style( 'quote-tracker-base', plugin_dir_url( __FILE__ ) . 'theme/style.css', '', 'all' ); 
         wp_enqueue_script( 'quote-script', plugin_dir_url( __FILE__ ) . 'theme/script.js', array('jquery' ), '0.0.1' );        
     }    
 
-    if ( is_single() ) {
-        
-        if ( file_exists( $custom_template ) ) {            
-            
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );
+    $template = array(
+        'post_type' => 'zm-quote-tracker',
+        'single' => plugin_dir_path( __FILE__ ) . 'theme/single-zm-quote-tracker.php',
+        'archive' => plugin_dir_path( __FILE__ ) . 'theme/archive-zm-quote-tracker.php',
+        'taxonomy' => plugin_dir_path( __FILE__ ) . 'theme/taxonomy-zm-quote-tracker.php'
+        );
 
-            if ( current_user_can( 'publish_posts' ) ) {
-                wp_enqueue_script( 'inplace-edit-script' );
-                wp_enqueue_style( 'inplace-edit-style' );
-            }            
-
-            wp_enqueue_style( 'zm-cpt-single' );
-            wp_enqueue_script( 'zm-cpt-base' );                        
-
-            load_template( $custom_template );                        
-        }
-        
-    } elseif ( is_post_type_archive() ) {        
-        $custom_template  = plugin_dir_path( __FILE__ ) . 'theme/archive-' . $current_post_type . '.php';        
-
-        if ( file_exists( $custom_template ) ) {     
-            wp_enqueue_style( 'zm-cpt-single' );
-            wp_enqueue_script( 'zm-cpt-base' );            
-
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );            
-                      
-            load_template( $custom_template );
-        } else {
-            print '<p>Default: ' . $default_template . '</p>';
-            print '<p>Custom: ' . $custom_template . '</p>';                
-            wp_die('Unable to load any template');
-        }
-        die();                
-    } elseif ( is_tax() ) {        
-        $custom_template  = plugin_dir_path( __FILE__ ) . 'theme/taxonomy-' . $current_post_type . '.php';
-        
-        if ( file_exists( $custom_template ) ) {                           
-            load_template( $custom_template );
-        } else {
-            print '<p>Default: ' . $default_template . '</p>';
-            print '<p>Custom: ' . $custom_template . '</p>';                
-            wp_die('Unable to load any template');
-        }
-
-    } else {
-        die('for now');
-    }
+    do_action( 'zm_template_redirect', $template );
 }
 
 /**
@@ -91,73 +50,6 @@ function quote_tracker_redirect( $params=array() ) {
  * @uses is_wp_error()
  * @uses check_ajax_referer()     
  */
-function postTypeSubmit() {
-    // @todo needs to be generic for cpt
-    check_ajax_referer( 'tt-ajax-forms', 'security' );
-
-    if ( !is_user_logged_in() )
-        return false;
-
-    $error = null;        
-
-    if ( empty( $_POST['post_title'] ) ) {
-        $error .= '<div class="message">Please enter a <em>title</em>.</div>';
-    }
-
-    if ( empty( $_POST['content'] ) ) {
-        $error .= '<div class="message">Please enter a some <em>content</em>.</div>';
-    }
-
-    if ( !is_null( $error ) ) {
-        print '<div class="error-container">' . $error . '</div>';
-        exit;
-    }
-
-    if ( current_user_can( 'publish_posts' ) )
-        $status = 'publish';
-    else
-        $status = 'pending';
-
-    unset( $_POST['action'] );
-
-    foreach( $_POST as $k => $v )
-        $_POST[$k] = esc_attr( $v );
-
-    $type = $_POST['post_type'];
-    $title = $_POST['post_title'];
-    $content = $_POST['content'];
-
-    unset( $_POST['post_title'] );
-    unset( $_POST['content'] );
-    unset( $_POST['post_author'] );
-    unset( $_POST['post_type'] );
-    unset( $_POST['security'] );
-    
-    $taxonomies = $_POST;
-
-    $author_ID = get_current_user_id();
-
-    $post = array(
-        'post_title' => $title,
-        'post_content' => $content,
-        'post_author' => $author_ID,            
-        'post_type' => $type,
-        'post_status' => $status,
-        'tax_input' => $_POST
-    );
-
-    $post_id = wp_insert_post( $post, true );
-    
-    if ( is_wp_error( $post_id ) ) {         
-        print_r( $post_id->get_error_message() );              
-        print_r( $post_id->get_error_messages() );              
-        print_r( $post_id->get_error_data() );                      
-    } else {            
-        print '<div class="success-container"><div class="message">Your content was successfully <strong>Saved</strong></div></div>';
-    }
-    die();
-} // End 'postTypeSubmit'
-
 function add_quote(){ 
     // @todo needs to be generic for cpt
     check_ajax_referer( 'zm-quote-tracker-forms', 'security' );
@@ -202,7 +94,7 @@ function add_quote(){
     unset( $_POST['excerpt'] );  
         
     $_POST['zm-quote-tag'] = explode( ", ", $_POST['zm-quote-tag'] );
-    
+
     $post_id = wp_insert_post( $post, true );        
 
     if ( is_wp_error( $post_id ) ) {         
@@ -253,6 +145,7 @@ function add_quote(){
 	die();
 }
 
+// Create and load js/css for dialog box/form
 function create_zm_quote_tracker( ) {
 
     $js_depends = array(

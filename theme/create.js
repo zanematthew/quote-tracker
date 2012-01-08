@@ -69,6 +69,7 @@ jQuery(document).ready(function( $ ){
         $.ajax({            
             data: "action=add_quote&" + payload,
             success: function( msg ) {                                 
+                console.log( msg );
                 if ( msg.length ) {
                     $( '#default_message_target' ).fadeIn().html( msg ).delay(1000).fadeOut();                    
                 }

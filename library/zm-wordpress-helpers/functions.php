@@ -331,10 +331,9 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
         $extra_css = null;
 
     if ( ! empty( $multiple ) ) {
-        $multiple = 'multiple="multiple"';
-        $multiple_extra = '[]';
+        $multiple = 'multiple="multiple"';        
     } else {
-        $multiple = false;
+        $multiple = false;        
     }
 
     if ( !isset( $label ) )     
@@ -362,7 +361,7 @@ function zm_base_build_options( $taxonomy=null, $value=null ) {
     <?php if ( $terms ) : ?>
     <fieldset class="zm-base-<?php echo $taxonomy; ?>-container <?php echo $taxonomy; ?>-container">
     <label class="zm-base-title"><?php echo $label; ?></label>    
-    <select name="<?php echo $taxonomy; ?><?php echo $multiple_extra;?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
+    <select name="<?php echo $taxonomy; ?><?php if ( $multiple=='multiple="multiple"') print '[]'; ?>" <?php echo $multiple; ?> <?php echo $extra_data; ?> class="<?php echo $extra_class; ?>" id="" <?php echo $multiple; ?>>
         <?php // First choice ?>
         <option value="">-- Choose a <?php echo $taxonomy; ?> --</option>              
         <?php foreach( $terms as $term ) : ?>
@@ -906,4 +905,39 @@ function zm_cpt_json_feed( $post_type, $taxonomies=array(), $status=null ) {
     endwhile;
     print '<script type="text/javascript">var _data = ' . json_encode( $types ) . '</script>';
 }
+endif;
+
+/**
+ * Determine if given templates exists if they do loads them
+ * based on the type of page being displayed.
+ *
+ * @uses is_single()
+ */
+if ( ! function_exists( '_zm_template_redirect' ) ) :
+function _zm_template_redirect( $params=array()){
+    
+    extract( $params );
+    
+    global $post;
+        
+    if ( $post->post_type != $params['post_type'] )
+        return;
+
+    if ( is_single() ) {        
+        if ( file_exists( $params['single'] ) ) {                        
+            load_template( $params['single'] );                        
+        }        
+    } elseif ( is_post_type_archive() ) {                
+        if ( file_exists( $params['archive'] ) ) {     
+            load_template( $params['archive'] );
+        } 
+    } elseif ( is_tax() ) {                     
+        if ( file_exists( $params['taxonomy'] ) ) {                           
+            load_template( $params['taxonomy'] );
+        } 
+    } else {
+        die('for now');
+    }    
+}
+add_action( 'zm_template_redirect', '_zm_template_redirect', 1 );
 endif;

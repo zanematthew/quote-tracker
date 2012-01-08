@@ -34,7 +34,7 @@ require_once plugin_dir_path( __FILE__ ) . 'library/hash/functions.php';
 require_once plugin_dir_path( __FILE__ ) . 'library/zm-wordpress-helpers/functions.php';
 
 
-// Unique Templates for this Plugin
+// Our actions/functions
 require_once plugin_dir_path( __FILE__ ) . 'actions.php';
 
 /**

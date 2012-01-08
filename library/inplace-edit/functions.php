@@ -1,13 +1,15 @@
 <?php
 
+if ( ! function_exists( 'zm_inplace_edit' ) ) {
 function zm_inplace_edit(){
-	if ( ! is_admin() ) {	
-    	wp_enqueue_script( 'inplace-edit-script', plugin_dir_url( __FILE__ ) . 'inplace-edit.js', array('jquery'), '0.1' );
-    	wp_enqueue_script( 'temp-localize', plugin_dir_url( __FILE__ ) . 'script.js', array('inplace-edit-script'), '0.1' );
-	    wp_enqueue_style( 'inplace-edit-style', plugin_dir_url( __FILE__ ) . 'inplace-edit.css', '', 'all' );	    
-	}
+    if ( ! is_admin() ) {   
+        wp_enqueue_script( 'inplace-edit-script', plugin_dir_url( __FILE__ ) . 'inplace-edit.js', array('jquery'), '0.1' );
+        wp_enqueue_script( 'temp-localize', plugin_dir_url( __FILE__ ) . 'script.js', array('inplace-edit-script'), '0.1' );
+        wp_enqueue_style( 'inplace-edit-style', plugin_dir_url( __FILE__ ) . 'inplace-edit.css', '', 'all' );       
+    }
 }
 add_action( 'inplace-edit', 'zm_inplace_edit' );
+}
 
 /**
  * Update a Post using the Current Users ID
@@ -21,6 +23,7 @@ add_action( 'inplace-edit', 'zm_inplace_edit' );
  *
  * @todo add check_ajax_refere()
  */
+ if ( ! function_exists( 'zm_inplace_edit_update_post' ) ) {
 function zm_inplace_edit_update_post( $post ) {    
     // @todo add check_ajax_referer
     if ( !is_user_logged_in() )
@@ -45,9 +48,10 @@ function zm_inplace_edit_update_post( $post ) {
 } // postTypeUpdate
 add_action( 'wp_ajax_zm_inplace_edit_update_post', 'zm_inplace_edit_update_post' );
 add_action( 'wp_ajax_nopriv_zm_inplace_edit_update_post', 'zm_inplace_edit_update_post' );
-
+}
 
 // @todo ajax refer
+if ( ! function_exists( 'zm_inplace_edit_update_utility' ) ) {
 function zm_inplace_edit_update_utility(){
 
     if ( !is_user_logged_in() )
@@ -77,3 +81,4 @@ function zm_inplace_edit_update_utility(){
 }
 add_action( 'wp_ajax_zm_inplace_edit_update_utility', 'zm_inplace_edit_update_utility' );
 add_action( 'wp_ajax_nopriv_zm_inplace_edit_update_utility', 'zm_inplace_edit_update_utility' );
+}

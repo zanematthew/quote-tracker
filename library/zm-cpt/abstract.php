@@ -9,6 +9,7 @@
  *
  */
 require_once 'interface.php';
+if ( ! class_exists( 'zMCustomPostTypeBase' ) ) :
 abstract class zMCustomPostTypeBase implements zMICustomPostType {
 
     public function __construct() {
@@ -203,225 +204,7 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
        
         return $this->taxonomy;
     } // End 'function'   
-
-    /**
-     * Load the taxonomy template, css, js files and allow the users theme folder
-     * override our default theme.
-     *
-     * This should work for an unlimited number of custom post types. If the user
-     * made a custom tempalte in their theme folder load that, if not we load our
-     * custom template, and fall back on the default template.
-     *
-     * @param current_post_type
-     * @package Template Redirect     
-     *
-     * @uses wp_die()
-     * @uses wp_register_style()
-     * @uses wp_enqueue_style()
-     * @uses plugin_dir_url()
-     * @uses plugin_dir_path()
-     * @uses get_post_types()
-     * @uses is_tax()
-     * @uses load_template()     
-     */
-    public function taxonomyRedirect( $current_post_type=null ) {
-
-        global $wp_query;
-
-        if ( is_null( $current_post_type ) )
-            wp_die( 'I need a CPT');
-
-        foreach( $this->post_type as $wtf ) {
-            
-            $my_cpt = get_post_types( array( 'name' => $wtf['type']), 'objects' );                    
-            
-            $custom_template  = $this->my_path . 'theme/taxonomy-' . $wtf['type'] . '.php';
-            
-            $default_template = plugin_dir_path( __FILE__ ) . 'theme/default/taxonomy.php';
-            $theme_template   = STYLESHEETPATH . '/index.php';
-
-            if ( is_tax( $wtf['taxonomies'] ) ) {                                                
-
-                if ( in_array( $wp_query->query_vars['taxonomy'], $wtf['taxonomies'] ) ) {
-                
-                    if ( file_exists( $custom_template ) ) {
-                        wp_enqueue_script( 'zm-cpt-base' );
-                        wp_enqueue_style( 'zm-cpt-taxonomy' );
-
-                        wp_enqueue_script( 'bootstrap-twipsy' );
-                        wp_enqueue_script( 'bootstrap-popover' );
-
-                        $this->loadStyleScript();
-                        // $this->loadScript();
-                        load_template( $custom_template );
-                    }
-                    
-                    elseif ( file_exists( $default_template ) ) {
-                        wp_enqueue_script( 'zm-cpt-base' );
-                        wp_enqueue_style( 'zm-cpt-taxonomy' );
-
-                        wp_enqueue_script( 'bootstrap-twipsy' );
-                        wp_enqueue_script( 'bootstrap-popover' );
-
-                        load_template( $default_template );
-                    } 
-
-                    else {                                                          
-                        load_template( $default_template );
-                    } 
-
-                } else {
-                    wp_die( 'Sorry the following taxonomies: ' . print_r( $wtf['taxonomies'] ) . ' are not in my array' );
-                }  
-                exit;
-            }      
-        }
-    } // End 'taxonomyRedirect'
     
-    /**
-     * Load the archive template for a given post type.
-     *
-     * We check in the users current theme folder first in:
-     * wp-content/theme/[user theme]/archive-[post type].php then
-     * in our: wp-content/plugin/[plugin name]/theme/arcvhie-[post type].php
-     * if none of those exisits load: wp-content/plugin/[plugin name]/theme/default/arcvhie.php
-     *
-     * @package Template Redirect
-     *
-     * @uses wp_register_style()
-     * @uses wp_enqueue_style()
-     * @uses wp_die()
-     * @uses plugin_dir_url()
-     * @uses plugin_dir_path()
-     * @uses is_post_type_archive()
-     * @uses load_template()
-     *
-     * @todo this will need a loop to handle multiple cpt's
-     */
-    public function archiveRedirect( $current_post_type=null ) {
-
-        if ( is_null( $current_post_type ) ) {
-            wp_die( 'I need a CPT');        
-        }
-
-        $default_template = plugin_dir_path( __FILE__ ) . 'theme/default/archive.php';
-        $custom_template  = $this->my_path . 'theme/archive-' . $current_post_type . '.php';        
-
-        if ( ! is_post_type_archive( $current_post_type ) )
-            return;
-
-        if ( file_exists( $custom_template ) ) {     
-            wp_enqueue_style( 'zm-cpt-single' );
-            wp_enqueue_script( 'zm-cpt-base' );            
-
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );
-
-            $this->loadStyleScript();
-                      
-            load_template( $custom_template );
-        } 
-
-        elseif ( file_exists( $default_template ) ) {
-            wp_enqueue_script( 'zm-cpt-base' );
-            wp_enqueue_style( 'zm-cpt-archive' );
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );
-
-            $this->loadStyleScript();                      
-
-            load_template( $default_template );
-        } 
-
-        else {
-            print '<p>Default: ' . $default_template . '</p>';
-            print '<p>Custom: ' . $custom_template . '</p>';                
-            wp_die('Unable to load any template');
-        }
-        die();
-
-    } // End 'archiveRedirect'
-
-    /**
-     * Load the single template and needed css/js allowing the template to be overriden
-     * via the users theme folder.
-     *
-     * If we do NOT have a "current post type", just load the default single.php 
-     * from the users custom theme folder. If we do have one we do some checking, 
-     * first we check to see if we (plugin developer) have a custom template in:
-     * /custom/single-[custom post type].php if we do load that if we don't use 
-     * the default in /default/single.php     
-     *
-     * wp-content/theme/[users theme]/single-[custom_post_type].php
-     * wp-content/plugins/[plugin name]]/theme/single-[$]custom_post_type].php
-     * wp-content/plugins/[plugin name]/default/single.php
-     *
-     * @package Template Redirect
-     *
-     * @param current_post_type
-     *
-     * @uses is_single()
-     * @uses load_template()
-     * @uses wp_register_style()
-     * @uses wp_enqueue_style()
-     * @uses wp_enqueue_script()
-     * @uses plugin_dir_url()
-     * @uses plugin_dir_path()
-     * @uses current_user_can()     
-     */
-    public function singleRedirect( $current_post_type=null ) {
-
-        if ( ! is_single() )
-            print 'not single';
-
-        if ( is_null( $current_post_type ) || empty( $current_post_type ) ) {            
-            load_template( STYLESHEETPATH . '/single.php' );                
-            die();
-        }
-        
-        $default_template = plugin_dir_path( __FILE__ ) . 'theme/default/single.php';
-        $custom_template  = $this->my_path . 'theme/single-' . $current_post_type . '.php';
-        $theme_template   = STYLESHEETPATH . '/single-' . $current_post_type . '.php';
-
-        if ( file_exists( $theme_template ) ) {
-            load_template( $theme_template );
-        }
-
-        elseif ( file_exists( $custom_template ) ) {            
-            
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );
-
-            if ( current_user_can( 'publish_posts' ) ) {
-                wp_enqueue_script( 'inplace-edit-script' );
-                wp_enqueue_style( 'inplace-edit-style' );
-            }            
-            wp_enqueue_style( 'zm-cpt-single' );
-            wp_enqueue_script( 'zm-cpt-base' );            
-            
-            $this->loadStyleScript();
-            // $this->loadScript();
-
-            load_template( $custom_template );                        
-        } 
-
-        else {
-            wp_enqueue_script( 'bootstrap-twipsy' );
-            wp_enqueue_script( 'bootstrap-popover' );
-            
-            // Load our default template, css and js
-            if ( current_user_can( 'publish_posts' ) ) {
-                wp_enqueue_script( 'inplace-edit-script' );
-                wp_enqueue_style( 'inplace-edit-style' );
-            }
-            wp_enqueue_style( 'zm-cpt-single' );
-            wp_enqueue_script( 'zm-cpt-base' );            
-            load_template( $default_template );
-        }
-        
-        die();        
-    } // End 'singleRedirect'
-
     /** 
      * loads a template from a specificed path
      *
@@ -439,42 +222,6 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
         load_template( $template );
         die();
     } // loadTemplate    
-
-    /**
-     * Update a Post using the Current Users ID
-     *
-     * @package Ajax
-     *
-     * @uses wp_update_post()
-     * @uses wp_get_current_user()
-     * @uses is_user_logged_in()
-     * @uses current_user_can()
-     *
-     * @todo add check_ajax_refere()
-     */
-    public function postTypeUpdate( $post ) {
-        
-        // @todo add check_ajax_referer
-        if ( !is_user_logged_in() )
-            return false;
-
-        if ( current_user_can( 'publish_posts' ) )
-            $status = 'publish';
-        else
-            $status = 'pending';
-
-        unset( $_POST['action'] );
-                
-        // @todo validateWhiteList( $white_list, $data )
-
-        $current_user = wp_get_current_user();                
-        $_POST['post_author'] = $current_user->ID;
-        $_POST['post_modified'] = current_time('mysql');                
-
-        $update = wp_update_post( $_POST );
-
-        die();
-    } // postTypeUpdate
 
     /**
      * Inserts a comment for the current post if the user is logged in
@@ -519,45 +266,6 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
         }
         die();
     } // End 'commentAdd'
-
-    /**
-     * Updates the 'utiltily', i.e. taxonomies, of a post
-     *
-     * @package Ajax
-     *
-     * @param (int)post id, (array)taxonomies
-     *
-     * @uses is_user_logged_in()
-     * @uses current_user_can()
-     * @uses wp_set_post_terms()
-     *
-     * @todo add chcek_ajax_refer()
-     */
-    public function defaultUtilityUpdate( $post_id=null, $taxonomies=null) {
-
-        if ( !is_user_logged_in() )
-            return false;
-
-        if ( current_user_can( 'publish_posts' ) )
-            $status = 'publish';
-        else
-            $status = 'pending';
-
-        $post_id = (int)$_POST['PostID'];    
-
-        unset( $_POST['action'] );
-        unset( $_POST['PostID'] );
-        
-        $taxonomies = $_POST;
-
-        foreach( $taxonomies as $taxonomy => $term ) {
-            wp_set_post_terms( $post_id, $term, $taxonomy );
-            // add check to see if terms are new
-            //$new_terms[]['term'] = get_term_by( 'id', $term, &$taxonomy );
-        }
-                   
-        die();
-    } // entryUtilityUpdate
 
     /**
      * Delets a post given the post ID, post will be moved to the trash
@@ -732,3 +440,4 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
     }
 
 } // End 'CustomPostTypeBase'
+endif;
