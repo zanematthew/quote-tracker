@@ -2,11 +2,11 @@
 
 if ( ! function_exists( 'zm_inplace_edit' ) ) {
 function zm_inplace_edit(){
-    if ( ! is_admin() ) {   
-        wp_enqueue_script( 'inplace-edit-script', plugin_dir_url( __FILE__ ) . 'inplace-edit.js', array('jquery'), '0.1' );
-        wp_enqueue_script( 'temp-localize', plugin_dir_url( __FILE__ ) . 'script.js', array('inplace-edit-script'), '0.1' );
-        wp_enqueue_style( 'inplace-edit-style', plugin_dir_url( __FILE__ ) . 'inplace-edit.css', '', 'all' );       
-    }
+	if ( ! is_admin() ) {	
+    	wp_enqueue_script( 'inplace-edit-script', plugin_dir_url( __FILE__ ) . 'inplace-edit.js', array('jquery'), '0.1' );
+    	wp_enqueue_script( 'temp-localize', plugin_dir_url( __FILE__ ) . 'script.js', array('inplace-edit-script'), '0.1' );
+	    wp_enqueue_style( 'inplace-edit-style', plugin_dir_url( __FILE__ ) . 'inplace-edit.css', '', 'all' );	    
+	}
 }
 add_action( 'inplace-edit', 'zm_inplace_edit' );
 }

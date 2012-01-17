@@ -78,6 +78,8 @@ function build_filters( _filter_selector ) {
     var searchClasses = '';
     _filters = {};     
 
+console.log( typeof _filter_selector );
+
     jQuery( _filter_selector + " select" ).each(function() { 
         if(jQuery(this).val()) {
 //            searchClasses += "." + jQuery(this).val();

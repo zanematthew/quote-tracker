@@ -1,5 +1,6 @@
 <?php
 /** 
+ * @version 1.0.0
  * 
  * This is used to regsiter a custom post type, custom taxonomy and provide template redirecting.
  * 
@@ -24,11 +25,6 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
         add_action( 'wp_head', array( &$this, 'baseAjaxUrl' ) );                    
         add_action( 'wp_footer', array( &$this, 'createPostTypeDiv' ) );            
         add_action( 'wp_footer', array( &$this, 'createDeleteDiv' ) );                            
-
-        wp_enqueue_script( 'zm-login', plugin_dir_url( __FILE__ ) . 'js/login.js',   array('jquery'), '0.1' );                        
-        wp_enqueue_style(  'zm-login', plugin_dir_url( __FILE__ ) . 'css/login.css', '', 'all' );
-
-        $this->loginSetup();
     }
 
     /**
@@ -224,6 +220,42 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
     } // loadTemplate    
 
     /**
+     * Update a Post using the Current Users ID
+     *
+     * @package Ajax
+     *
+     * @uses wp_update_post()
+     * @uses wp_get_current_user()
+     * @uses is_user_logged_in()
+     * @uses current_user_can()
+     *
+     * @todo add check_ajax_refere()
+     */
+    public function postTypeUpdate( $post ) {
+        
+        // @todo add check_ajax_referer
+        if ( !is_user_logged_in() )
+            return false;
+
+        if ( current_user_can( 'publish_posts' ) )
+            $status = 'publish';
+        else
+            $status = 'pending';
+
+        unset( $_POST['action'] );
+                
+        // @todo validateWhiteList( $white_list, $data )
+
+        $current_user = wp_get_current_user();                
+        $_POST['post_author'] = $current_user->ID;
+        $_POST['post_modified'] = current_time('mysql');                
+
+        $update = wp_update_post( $_POST );
+
+        die();
+    } // postTypeUpdate
+
+    /**
      * Inserts a comment for the current post if the user is logged in
      *
      * @package Ajax
@@ -266,6 +298,45 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
         }
         die();
     } // End 'commentAdd'
+
+    /**
+     * Updates the 'utiltily', i.e. taxonomies, of a post
+     *
+     * @package Ajax
+     *
+     * @param (int)post id, (array)taxonomies
+     *
+     * @uses is_user_logged_in()
+     * @uses current_user_can()
+     * @uses wp_set_post_terms()
+     *
+     * @todo add chcek_ajax_refer()
+     */
+    public function defaultUtilityUpdate( $post_id=null, $taxonomies=null) {
+
+        if ( !is_user_logged_in() )
+            return false;
+
+        if ( current_user_can( 'publish_posts' ) )
+            $status = 'publish';
+        else
+            $status = 'pending';
+
+        $post_id = (int)$_POST['PostID'];    
+
+        unset( $_POST['action'] );
+        unset( $_POST['PostID'] );
+        
+        $taxonomies = $_POST;
+
+        foreach( $taxonomies as $taxonomy => $term ) {
+            wp_set_post_terms( $post_id, $term, $taxonomy );
+            // add check to see if terms are new
+            //$new_terms[]['term'] = get_term_by( 'id', $term, &$taxonomy );
+        }
+                   
+        die();
+    } // entryUtilityUpdate
 
     /**
      * Delets a post given the post ID, post will be moved to the trash
@@ -345,77 +416,8 @@ abstract class zMCustomPostTypeBase implements zMICustomPostType {
         }        
         return $classes;
     } // End 'addPostClass'  
+
     
-    /**
-     * To be used in AJAX submission, gets the $_POST data and logs the user in.
-     *
-     * @uses check_ajax_referer()
-     * @uses wp_signon()
-     * @uses is_wp_error()
-     *
-     * @todo move this to the abtract!
-     */    
-    public function siteLoginSubmit() {
-
-        check_ajax_referer( 'tt-ajax-forms', 'security' );
-        
-        $creds = array();
-        $creds['user_login'] = $_POST['user_name'];
-        $creds['user_password'] = $_POST['password'];
-
-        if ( $_POST['remember'] == 'on' ) {
-            $creds['remember'] = true;
-        } else {
-            $creds['remember'] = false;
-        }
-
-        $user = wp_signon( $creds, false );
-
-        if ( is_wp_error( $user ) )
-            $user->get_error_message();
-
-        die();
-    } // siteLoginSubmit
-
-    /**
-     * 
-     */
-    public function createLoginDiv(){ ?>
-    <div id="login_dialog" class="dialog-container">
-            <div id="login_target" style="display: none;">login hi</div>
-        </div>
-    <?php }
-      
-    /**
-     * Login set-up
-     * 
-     * Note this does NOT hook into the default WordPress login! In essence 
-     * you will need custom mark-up. Telling it which template to call
-     * and create you own, see theme/default/login.php 
-     *
-     * @uses add_action()
-     * @uses wp_enqueue_style()
-     * @uses wp_enqueue_script()
-     * @uses plugin_dir_url()
-     * @todo segment this!
-     */
-    public function loginSetup() {
-        wp_enqueue_script( 'login-script', plugin_dir_url( __FILE__ ) . 'js/login.js', array('jquery','tt-script'), '1.0' );
-
-        add_action( 'wp_footer', array( &$this, 'createLoginDiv' ) );            
-        add_action( 'wp_ajax_siteLoginSubmit', array( &$this, 'siteLoginSubmit' ) );        
-        add_action( 'wp_ajax_nopriv_siteLoginSubmit', array( &$this, 'siteLoginSubmit' ) ); 
-
-        $dependencies['style'] = array(
-            'tt-base-style',
-            'wp-jquery-ui-dialog'
-        );
-        
-        wp_enqueue_style( 'wp-jquery-ui-dialog' );
-        wp_enqueue_style( 'tt-login-style', plugin_dir_url( __FILE__ ) . 'css/login.css', $dependencies['style'], 'all' );
-        wp_enqueue_script( 'jquery-ui-effects' );
-    } // End 'loginSetup'
-
     /**
      * @todo DON'T print from an index, print from $i
      */

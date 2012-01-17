@@ -22,8 +22,6 @@ add_action( 'zm-ajax', 'zm_ajax' );
  * Loads the Post Content in a Div right under the Post
  * Title and provides "basic" navigation, permalink,
  * link to comments, close icon, etc.
- *
- * @uses load_template()
  */
 function zm_ajax_load_post( $post_id=null) {	
     
@@ -42,7 +40,7 @@ function zm_ajax_load_post( $post_id=null) {
     
     print '<div class="zm-ajax-post-container">' . $title.$content.$navigation . '</div>';   
     die();
-} // loadTemplate    
+}
 add_action( 'wp_ajax_zm_ajax_load_post', 'zm_ajax_load_post' );
 add_action( 'wp_ajax_nopriv_zm_ajax_load_post', 'zm_ajax_load_post' );    
 
@@ -89,3 +87,23 @@ function zm_ajax_add_comment() {
     }
     die();
 } // End 'commentAdd'
+
+/** 
+ * loads a template from a specificed path
+ *
+ * @package Ajax
+ *
+ * @uses load_template()
+ */
+function zm_ajax_load_template() {
+
+    $template = $_POST['template'];
+
+    if ( $template == null )
+        wp_die( 'Yo, you need a template!');
+
+    load_template( $template );
+    die();
+}
+add_action( 'wp_ajax_nopriv_zm_ajax_load_template', 'zm_ajax_load_template' );
+add_action( 'wp_ajax_zm_ajax_load_template', 'zm_ajax_load_template' );

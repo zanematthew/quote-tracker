@@ -1,5 +1,6 @@
 <?php
 /**
+ * @version 1.0.0
  * A predetermined list of methods our class MUST implement
  *
  * The goal of this interface is to provide a set of base methods for making Custom Post Types in WordPress 3.2+. 
@@ -17,7 +18,7 @@
  */
  
  // @todo namespace
- if ( ! interface_exists( 'zMICustomPostType' ) ) :
+if ( ! interface_exists( 'zMICustomPostType' ) ) :
 interface zMICustomPostType {
     public function registerPostType( $param=array() );
     public function registerTaxonomy( $param=array() );        
