@@ -21,7 +21,7 @@ else
  */
 $cpt_obj = get_post_types( array( 'name' => $post_type), 'objects' );
 $obj_tax = get_taxonomies( array( 'object_type' => array($post_type) ), $output='objects' );
-
+zm_cpt_json_feed( $post_type='zm-quote-tracker', $taxonomies=$cpt_obj[ $post_type ]->taxonomies );
 ?>
 <div class="container-zm-quote-tracker">
     <div class="single-zm-quote-tracker">
