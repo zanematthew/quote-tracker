@@ -20,10 +20,16 @@ if ( ! is_admin() ) {
  */
 function quote_tracker_redirect( $params=array() ) {    
 
-   $post_type = get_query_var('post_type');
+    $post_type = get_query_var('post_type');
+    global $wp_query;
+    $taxonomy = $wp_query->query_vars['taxonomy'];
 
-    if ( $post_type != 'zm-quote-tracker' )
-        return;
+    // if ( $post_type != 'zm-quote-tracker' ) {
+    //     return;
+    // } else {
+    //     global $wp_query;
+    //     $taxonomy = $wp_query->query_vars['taxonomy'];
+    // }
 
     if ( ! is_admin() ) {
         do_action( 'inplace-edit' );
@@ -36,6 +42,7 @@ function quote_tracker_redirect( $params=array() ) {
 
     $template = array(
         'post_type' => 'zm-quote-tracker',
+        'taxonomy' => $taxonomy,
         'single' => plugin_dir_path( __FILE__ ) . 'theme/single-zm-quote-tracker.php',
         'archive' => plugin_dir_path( __FILE__ ) . 'theme/archive-zm-quote-tracker.php',
         'taxonomy' => plugin_dir_path( __FILE__ ) . 'theme/taxonomy-zm-quote-tracker.php'
